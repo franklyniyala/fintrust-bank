@@ -1,0 +1,35 @@
+{
+  "name": "fintrust-bank-backend",
+  "version": "1.0.0",
+  "description": "Prototype banking API for DevOps monthly challenge",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test",
+    "lint:check": "node --check src/server.js",
+    "lint": "npm run lint:js && npm run lint:format",
+    "lint:js": "eslint . --ext .js",
+    "lint:format": "prettier --check '**/*.{js,json,yaml}'",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "lint:docker": "hadolint Dockerfile"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^18.1.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.8.4"
+  }
+}

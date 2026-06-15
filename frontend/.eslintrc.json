@@ -1,0 +1,19 @@
+{
+  "env": { "browser": true, "es2022": true },
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:prettier/recommended"],
+  "plugins": ["import", "react"],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "ecmaFeatures": { "jsx": true }
+  },
+  "settings": {
+    "react": { "version": "detect" }
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "import/no-duplicates": "error",
+    "react/react-in-jsx-scope": "off"
+  }
+}

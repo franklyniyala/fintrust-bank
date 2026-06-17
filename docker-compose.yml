@@ -13,6 +13,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: fintrust-backend:v1.0
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -31,6 +32,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: fintrust-frontend:v1.0
     ports:
       - "80:80"
     depends_on:

@@ -32,7 +32,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ SonarQube Analysis Passed'
+            echo '✅ SonarQube Analysis Passeed'
         }
 
         failure {

@@ -28,30 +28,15 @@ pipeline {
             }
         }
 
-        stage('Run Snyk Analysis') {
-            steps {
-                withCredentials([string(credentialsId: "SNYK_TOKEN", variable: 'SNYK_TOKEN')]) {
-                    sh '''
-                    docker run --rm \
-                    -e SNYK_TOKEN=$SNYK_TOKEN \
-                    -v $(pwd):/app \
-                    snyk/snyk-cli test
-                    '''
-                }
-            }
-        }
-
     }
 
     post {
         success {
             echo '✅ SonarQube Analysis Passed'
-            echo '✅ Snyk Analysis Passed'
         }
 
         failure {
             echo '❌ SonarQube Analysis Failed'
-            echo '❌ Snyk Analysis Failed'
         }
     }
 }

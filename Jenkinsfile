@@ -19,8 +19,8 @@ pipeline {
                     -e SONAR_TOKEN=$SONAR_TOKEN \
                     -v $(pwd):/usr/src \
                     sonarsource/sonar-scanner-cli \
-                    -Dsonar.projectKey=frank-org-fintrust \
-                    -Dsonar.organization=frank_org \
+                    -Dsonar.projectKey=frank-org_fintrust \
+                    -Dsonar.organization=frank-org \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=https://sonarcloud.io \
                     '''

@@ -1,9 +1,34 @@
-node_modules
+# Node
+node_modules/
+
+# Environment
 .env
-dist
-coverage
+.env.local
+
+# Build output
+dist/
+build/
+coverage/
+
+# OS
 .DS_Store
+
+# Logs
 *.log
-terraform/.terraform
-terraform/*.tfstate
-terraform/*.tfstate.backup
+npm-debug.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Terraform (infrastructure folder)
+infrastructure/.terraform/
+infrastructure/*.tfstate
+infrastructure/*.tfstate.backup
+infrastructure/.terraform.lock.hcl
+
+# Docker / Compose
+docker-compose.override.yml
+
+# Misc
+logs/

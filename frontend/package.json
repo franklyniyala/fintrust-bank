@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0",
-    "lint": "npm run lint:js && npm run lint:format",
-    "lint:js": "eslint . --ext .js,.jsx",
-    "lint:format": "prettier --check '**/*.{js,json,css,html}'",
-    "lint:fix": "eslint . --fix && prettier --write .",
-    "lint:docker": "hadolint Dockerfile"
-  },
+  "dev": "vite --host 0.0.0.0",
+  "build": "vite build",
+  "test": "vitest run",
+  "preview": "vite preview --host 0.0.0.0",
+  "lint": "npm run lint:js && npm run lint:format",
+  "lint:js": "eslint . --ext .js,.jsx",
+  "lint:format": "prettier --check '**/*.{js,json,css,html}'",
+  "lint:fix": "eslint . --fix && prettier --write .",
+  "lint:docker": "hadolint Dockerfile"
+},
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "react": "latest",
@@ -19,11 +20,14 @@
     "vite": "latest"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-react": "^7.37.5",
-    "prettier": "^3.8.4"
+    "jsdom": "^29.1.1",
+    "prettier": "^3.8.4",
+    "vitest": "^4.1.9"
   }
 }

@@ -11,21 +11,32 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
+        stage('Backend Unit Test') {
             steps {
-                sh 'npm install'
-                sh 'npm test'
+                dir('backend') {
+                    sh 'npm install'
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage ('Frontend Unit Test') {
+            steps {
+                dir ('frontend') {
+                    sh 'npm install'
+                    sh 'npm test'
+                }
             }
         }
     }
 
     post {
         success {
-            echo '✅ Unit Tests Passed'
+            echo '✅ Backend and Frontend Unit Tests Passed'
         }
 
         failure {
-            echo '❌ Unit Tests Failed'
+            echo '❌ Backend and Frontend Unit Tests Failed'
         }
     }
 }

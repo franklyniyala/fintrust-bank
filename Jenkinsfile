@@ -11,32 +11,32 @@ pipeline {
             }
         }
 
-        stage('Run Sonarqube Analysis') {
+        stage('Backend Unit Test') {
             steps {
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                    docker run --rm \
-                    -e SONAR_TOKEN=$SONAR_TOKEN \
-                    -v $(pwd):/usr/src \
-                    sonarsource/sonar-scanner-cli \
-                    -Dsonar.projectKey=frank-org-fintrust \
-                    -Dsonar.organization=frank_org \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=https://sonarcloud.io \
-                    '''
+                dir('backend') {
+                    sh 'npm install'
+                    sh 'npm test'
                 }
             }
         }
 
+        stage ('Frontend Unit Test') {
+            steps {
+                dir ('frontend') {
+                    sh 'npm install'
+                    sh 'npm test'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ SonarQube Analysis Passed'
+            echo '✅ Backend and Frontend Unit Tests Passed'
         }
 
         failure {
-            echo '❌ SonarQube Analysis Failed'
+            echo '❌ Backend and Frontend Unit Tests Failed'
         }
     }
 }

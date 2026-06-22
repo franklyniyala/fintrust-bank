@@ -29,16 +29,6 @@ pipeline {
             }
         }
 
-        post {
-        success {
-            echo '✅ Backend and Frontend Unit Tests Passed'
-        }
-        failure {
-            echo '❌ Backend and Frontend Unit Tests Failed'
-        }
-    }
-        
-
         stage('SonarQube Scan') {
             steps {
                 withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
@@ -54,13 +44,15 @@ pipeline {
                     '''
                 }
             }
-        }
-    
+        }    
+    }
+
+    post {
         success {
-            echo '✅ SonarQube Scan Completed Successfully'
+            echo ' ✅ Unit test and SonarQube scan completed successfully.'
         }
         failure {
-            echo '❌ SonarQube Scan Failed'
+            echo ' ❌ Unit test or SonarQube scan failed. Please check the logs for details.'
         }
     }
 }

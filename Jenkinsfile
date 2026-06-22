@@ -50,10 +50,12 @@ pipeline {
     post {
         success {
             echo '✅ Backend and Frontend Unit Tests Passed'
+            echo '✅ SonarQube Scan Completed'
         }
 
         failure {
             echo '❌ Backend and Frontend Unit Tests Failed'
+            echo '❌ SonarQube Scan Failed'
         }
     }
 }

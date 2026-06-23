@@ -66,10 +66,10 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
-                    sh 'docker tag fintrust-backend:latest franklyniyala/fintrust-backend:latest'
-                    sh 'docker tag fintrust-frontend:latest franklyniyala/fintrust-frontend:latest'
-                    sh 'docker push franklyniyala/fintrust-backend:latest'
-                    sh 'docker push franklyniyala/fintrust-frontend:latest'
+                    sh 'docker tag fintrust-backend:latest ekenefranklyn/fintrust-backend:latest'
+                    sh 'docker tag fintrust-frontend:latest ekenefranklyn/fintrust-frontend:latest'
+                    sh 'docker push ekenefranklyn/fintrust-backend:latest'
+                    sh 'docker push ekenefranklyn/fintrust-frontend:latest'
                 }
             }
         } 

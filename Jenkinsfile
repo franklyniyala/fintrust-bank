@@ -44,15 +44,53 @@ pipeline {
                     '''
                 }
             }
-        }    
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t fintrust-backend:latest .'
+                }
+            }   
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                dir('frontend') {
+                    sh 'docker build -t fintrust-frontend:latest .'
+                }
+            }
+        }
+
+        stage('Push Images to DockerHub')  {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
+                    sh 'docker tag fintrust-backend:latest franklyniyala/fintrust-backend:latest'
+                    sh 'docker tag fintrust-frontend:latest franklyniyala/fintrust-frontend:latest'
+                    sh 'docker push franklyniyala/fintrust-backend:latest'
+                    sh 'docker push franklyniyala/fintrust-frontend:latest'
+                }
+            }
+        } 
+
+        stage('Deploy Application') {
+            steps {
+                sh 'docker-compose -f docker-compose.yml up -d'
+            }
+        }
     }
 
     post {
         success {
             echo ' ✅ Unit test and SonarQube scan completed successfully.'
+            echo ' ✅ Docker images built and pushed to DockerHub successfully.'
+            echo ' ✅ Application deployed successfully.'
         }
         failure {
             echo ' ❌ Unit test or SonarQube scan failed. Please check the logs for details.'
+            echo ' ❌ Docker image build or push failed. Please check the logs for details.'
+            echo ' ❌ Application deployment failed. Please check the logs for details.'
         }
     }
 }

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress 
+metadata:
+
+  name: fintrust-ingress
+  labels:
+    app: fintrust-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+spec:
+  rules:
+    - host: fintrust.local
+      
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: fintrust-backend
+              port:
+                number: 8082
+
+        

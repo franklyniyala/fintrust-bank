@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-configmap
+  labels:
+    app: fintrust-frontend
+data:
+  API_URL: "http://fintrust-frontend:80"

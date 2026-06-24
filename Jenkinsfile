@@ -76,8 +76,11 @@ pipeline {
 
         stage('Deploy Application to Kubernetes') {
             steps {
-                sh 'kubectl apply -f K8s/'  
-                sh 'kubectl rollout status deployment/fintrust-backend'
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh 'export KUBECONFIG=$KUBECONFIG'
+                    sh 'kubectl apply -f K8s/'  
+                    sh 'kubectl rollout status deployment/fintrust-backend'
+                }
             }
         }
     }

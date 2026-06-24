@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: fintrust-frontend
+  labels:
+    app: fintrust-frontend
+  
+spec:
+  replicas: 3
+  
+  selector:
+    matchLabels:
+      app: fintrust-frontend
+  template:
+    metadata:
+      labels:
+        app: fintrust-frontend
+
+    spec:
+      containers:
+      - name: fintrust-frontend
+        image: fintrust-frontend:v1.0
+        imagePullPolicy: Never
+
+        ports: 
+        - containerPort: 80
+
+        envFrom:
+        - configMapRef:
+            name: frontend-configmap
+
+        
+
+        
+    

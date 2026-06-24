@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: backend-configmap
+  labels:
+    app: fintrust-backend
+
+data:
+  BACKEND_URL: "http://fintrust-backend:8082"
+
+  DB_HOST: "db"
+  DB_PORT: "5432"
+  DB_NAME: "fintrust"
+    

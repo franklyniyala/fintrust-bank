@@ -74,9 +74,10 @@ pipeline {
             }
         } 
 
-        stage('Deploy Application') {
+        stage('Deploy Application to Kubernetes') {
             steps {
-                sh 'docker compose -f docker-compose.yml up -d'
+                sh 'kubectl apply -f K8s/'  
+                sh 'kubectl rollout status deployment/fintrust-backend'
             }
         }
     }
@@ -85,12 +86,10 @@ pipeline {
         success {
             echo ' ✅ Unit test and SonarQube scan completed successfully.'
             echo ' ✅ Docker images built and pushed to DockerHub successfully.'
-            echo ' ✅ Application deployed successfully.'
+            echo ' ✅ Application deployed to kubernetes successfully.'
         }
         failure {
-            echo ' ❌ Unit test or SonarQube scan failed. Please check the logs for details.'
-            echo ' ❌ Docker image build or push failed. Please check the logs for details.'
-            echo ' ❌ Application deployment failed. Please check the logs for details.'
+            echo ' ❌ Pipeline failed. Please check the logs for details.'
         }
     }
 }

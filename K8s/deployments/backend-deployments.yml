@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: fintrust-backend
-        image: fintrust-backend:v1.0
+        image: fintrust-backend:v1.1
         imagePullPolicy: Never
 
         ports:

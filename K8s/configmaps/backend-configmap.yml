@@ -3,13 +3,14 @@ kind: ConfigMap
 
 metadata:
   name: backend-configmap
-  labels:
-    app: fintrust-backend
+  namespace: default
 
 data:
-  BACKEND_URL: "http://fintrust-backend:8082"
+  PORT: "8082"
 
   DB_HOST: "db"
   DB_PORT: "5432"
   DB_NAME: "fintrust"
+
+  CORS_ORIGIN: "http://localhost:5173"
     

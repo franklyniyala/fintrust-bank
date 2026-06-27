@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: grafana
+
+  template:
+    metadata:
+      labels:
+        app: grafana
+
+    spec:
+      containers:
+        - name: grafana
+
+          image: grafana/grafana:12.1.1
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 3000
+
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: GF_SECURITY_ADMIN_USER
+
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: GF_SECURITY_ADMIN_PASSWORD
+
+          volumeMounts:
+
+            # Persistent storage
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+
+            # Datasource provisioning
+            - name: grafana-datasource
+              mountPath: /etc/grafana/provisioning/datasources
+
+            # Dashboard provider provisioning
+            - name: grafana-dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+
+            # Dashboard JSON files
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+      volumes:
+
+        # Persistent storage
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+
+        # Datasource ConfigMap
+        - name: grafana-datasource
+          configMap:
+            name: grafana-datasource
+
+        # Dashboard provider ConfigMap
+        - name: grafana-dashboard-provider
+          configMap:
+            name: grafana-dashboard-provider
+
+        # Dashboard ConfigMap
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+            optional: true

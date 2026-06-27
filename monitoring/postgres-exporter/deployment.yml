@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: postgres-exporter
+  namespace: monitoring
+  labels:
+    app: postgres-exporter
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgres-exporter
+
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+
+    spec:
+      containers:
+        - name: postgres-exporter
+
+          image: prometheuscommunity/postgres-exporter:v0.15.0
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 9187
+
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-exporter-secret
+                  key: DATA_SOURCE_NAME
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 9187
+
+            initialDelaySeconds: 30
+            periodSeconds: 15
+
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9187
+
+            initialDelaySeconds: 10
+            periodSeconds: 10

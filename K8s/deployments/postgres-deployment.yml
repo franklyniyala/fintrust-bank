@@ -26,13 +26,22 @@ spec:
 
           env:
             - name: POSTGRES_USER
-              value: fintrustuser
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
 
             - name: POSTGRES_PASSWORD
-              value: fintrustpassword
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              value: fintrust
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
 
           volumeMounts:
             - name: postgres-storage

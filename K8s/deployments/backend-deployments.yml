@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: fintrust-backend
+  labels:
+    app: fintrust-backend
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fintrust-backend
+  template:
+    metadata:
+      labels:
+        app: fintrust-backend
+      
+    spec:
+      containers:
+      - name: fintrust-backend
+        image: fintrust-backend:v1.0
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8082
+
+        env:
+          - name: PORT
+            valueFrom:
+              configMapKeyRef:
+                name: backend-configmap
+                key: PORT
+
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: backend-configmap
+                key: DB_HOST
+
+          - name: DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: backend-configmap
+                key: DB_PORT
+
+          - name: DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: backend-configmap
+                key: DB_NAME
+
+          - name: CORS_ORIGIN
+            valueFrom:
+              configMapKeyRef:
+                name: backend-configmap
+                key: CORS_ORIGIN
+
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: fintrust-backend
+                key: DB_USER
+
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: fintrust-backend
+                key: DB_PASSWORD

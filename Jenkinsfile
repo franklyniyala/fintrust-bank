@@ -1,6 +1,17 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_USERNAME = "ekenefranklyn"
+        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/fintrust-backend"
+        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fintrust-frontend"
+
+        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        K8s_DIR = "K8s"
+        MONITORING_DIR = "monitoring"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -11,19 +22,33 @@ pipeline {
             }
         }
 
-        stage('Backend Unit Test') {
+        stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
                     sh 'npm install'
+                }
+            }
+        }
+
+        stage('Backend Unit Test') {
+            steps {
+                dir('backend') {
                     sh 'npm test'
                 }
             }
         }
 
-        stage ('Frontend Unit Test') {
+        stage ('Install Frontend Dependencies') {
             steps {
                 dir ('frontend') {
                     sh 'npm install'
+                }
+            }
+        }
+
+        stage('Frontend Unit Test') {
+            steps {
+                dir('frontend') {
                     sh 'npm test'
                 }
             }
@@ -46,10 +71,22 @@ pipeline {
             }
         }
 
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    sh 'docker build -t fintrust-backend:latest .'
+                    sh '''
+                    docker build \
+                    -t ${BACKEND_IMAGE}:${IMAGE_TAG} \
+                    -t ${BACKEND_IMAGE}:latest .
+                    '''
                 }
             }   
         }
@@ -57,8 +94,21 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    sh 'docker build -t fintrust-frontend:latest .'
+                    sh '''
+                    docker build \
+                    -t ${FRONTEND_IMAGE}:${IMAGE_TAG} \
+                    -t ${FRONTEND_IMAGE}:latest .
+                    '''
                 }
+            }
+        }
+
+        stage('Trivy Security Scan') {
+            steps {
+                sh '''
+                trivy image --exit-code 1 --severity HIGH,CRITICAL ${BACKEND_IMAGE}:latest
+                trivy image --exit-code 1 --severity HIGH,CRITICAL ${FRONTEND_IMAGE}:latest
+                '''
             }
         }
 
@@ -66,20 +116,57 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
-                    sh 'docker tag fintrust-backend:latest ekenefranklyn/fintrust-backend:latest'
-                    sh 'docker tag fintrust-frontend:latest ekenefranklyn/fintrust-frontend:latest'
-                    sh 'docker push ekenefranklyn/fintrust-backend:latest'
-                    sh 'docker push ekenefranklyn/fintrust-frontend:latest'
+                    sh 'docker tag ${BACKEND_IMAGE}:latest ${DOCKER_USERNAME}/${BACKEND_IMAGE}:latest'
+                    sh 'docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_USERNAME}/${FRONTEND_IMAGE}:latest'
+                    sh 'docker push ${DOCKER_USERNAME}/${BACKEND_IMAGE}:latest'
+                    sh 'docker push ${DOCKER_USERNAME}/${FRONTEND_IMAGE}:latest'
                 }
             }
         } 
 
+        stage('Deploy Monitoring') {
+            steps {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl apply -f monitoring/monitoring/namespace.yml
+                    kubectl apply -f monitoring/node-exporter/
+                    kubectl apply -f monitoring/prometheus/
+                    kubectl apply -f monitoring/grafana/
+                    kubectl apply -f monitoring/postgres-exporter/
+                    '''
+                }
+            }
+        }
+
         stage('Deploy Application to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
-                    sh 'export KUBECONFIG=$KUBECONFIG'
-                    sh 'kubectl apply -f K8s/'  
-                    sh 'kubectl rollout status deployment/fintrust-backend'
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl apply -f K8s/secrets/
+                    kubectl apply -f K8s/configmaps/
+                    kubectl apply -f K8s/deployments/
+                    kubectl apply -f K8s/services/
+                    kubectl apply -f K8s/ingress/
+                    kubectl apply -f K8s/storage/
+                    '''
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                withcredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl rollout status deployment/postgres-db
+                    kubectl rollout status deployment/fintrust-backend
+                    kubectl rollout status deployment/fintrust-frontend
+                    kubectl rollout status deployment/prometheus -n monitoring
+                    kubectl rollout status deployment/grafana -n monitoring
+                    kubectl rollout status deployment/postgres-exporter -n monitoring
+                    '''
                 }
             }
         }

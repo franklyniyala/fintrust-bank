@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
       - name: fintrust-backend
-        image: fintrust-backend:v1.1
-        imagePullPolicy: Never
+        image: ekenefranklyn/fintrust-backend:latest
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8082

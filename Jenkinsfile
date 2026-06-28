@@ -108,19 +108,6 @@ pipeline {
             }
         }
 
-        stage('Ensure Minikube Running') {
-            steps {
-                sh '''
-                if ! minikube status | grep -q "host: Running"; then
-                    echo "Minikube is not running, starting it..."
-                    minikube start
-                else
-                    echo "Minikube already running."
-                fi
-                '''
-            }
-        }
-
         stage('Deploy Monitoring') {
             steps {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {

@@ -108,17 +108,50 @@ pipeline {
             }
         }
 
+        stage('Ensure Minikube Running') {
+            steps {
+                sh '''
+                if ! minikube status | grep -q "host: Running"; then
+                    echo "Minikube is not running, starting it..."
+                    minikube start
+                else
+                    echo "Minikube already running."
+                fi
+                '''
+            }
+        }
+
         stage('Deploy Monitoring') {
             steps {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
-                    sh '''
-                    export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
-                    kubectl apply -f ${MONITORING_DIR}/node-exporter/
-                    kubectl apply -f ${MONITORING_DIR}/prometheus/
-                    kubectl apply -f ${MONITORING_DIR}/grafana/
-                    kubectl apply -f ${MONITORING_DIR}/postgres-exporter/
-                    '''
+                sh '''
+                export KUBECONFIG=$KUBECONFIG
+
+                echo "========== Creating Monitoring Namespace =========="
+                kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
+
+                echo "========== Deploying Node Exporter =========="
+                kubectl apply -f ${MONITORING_DIR}/node-exporter/configmap.yaml
+                kubectl apply -f ${MONITORING_DIR}/node-exporter/daemonset.yml
+                kubectl apply -f ${MONITORING_DIR}/node-exporter/service.yml
+
+                echo "========== Deploying Prometheus =========="
+                kubectl apply -f ${MONITORING_DIR}/prometheus/configmap.yaml
+                kubectl apply -f ${MONITORING_DIR}/prometheus/deployment.yaml
+                kubectl apply -f ${MONITORING_DIR}/prometheus/service.yml
+
+                echo "========== Deploying Grafana =========="
+                kubectl apply -f ${MONITORING_DIR}/grafana/configmaps/
+                kubectl apply -f ${MONITORING_DIR}/grafana/secret.yml
+                kubectl apply -f ${MONITORING_DIR}/grafana/pvc.yml
+                kubectl apply -f ${MONITORING_DIR}/grafana/deployment.yml
+                kubectl apply -f ${MONITORING_DIR}/grafana/service.yml
+
+                echo "========== Deploying PostgreSQL Exporter =========="
+                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/secret.yml
+                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/deployment.yml
+                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/service.yml
+                '''
                 }
             }
         }

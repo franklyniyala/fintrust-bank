@@ -147,12 +147,12 @@ pipeline {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f ${K8S_DIR}/secrets/
-                    kubectl apply -f ${K8S_DIR}/configmaps/
-                    kubectl apply -f ${K8S_DIR}/deployments/
-                    kubectl apply -f ${K8S_DIR}/services/
-                    kubectl apply -f ${K8S_DIR}/ingress/
-                    kubectl apply -f ${K8S_DIR}/storage/
+                    kubectl apply -f ${K8s_DIR}/secrets/
+                    kubectl apply -f ${K8s_DIR}/configmaps/
+                    kubectl apply -f ${K8s_DIR}/deployments/
+                    kubectl apply -f ${K8s_DIR}/services/
+                    kubectl apply -f ${K8s_DIR}/ingress/
+                    kubectl apply -f ${K8s_DIR}/storage/
                     '''
                 }
             }

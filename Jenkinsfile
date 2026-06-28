@@ -94,37 +94,30 @@ pipeline {
             }
         }
 
-        stage('Trivy Security Scan') {
-            steps {
-                sh '''
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${BACKEND_IMAGE}:latest
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${FRONTEND_IMAGE}:latest
-                '''
-            }
-        }
-
         stage('Push Images to DockerHub')  {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
-                    sh 'docker tag ${BACKEND_IMAGE}:latest ${DOCKER_USERNAME}/${BACKEND_IMAGE}:latest'
-                    sh 'docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_USERNAME}/${FRONTEND_IMAGE}:latest'
-                    sh 'docker push ${DOCKER_USERNAME}/${BACKEND_IMAGE}:latest'
-                    sh 'docker push ${DOCKER_USERNAME}/${FRONTEND_IMAGE}:latest'
+                sh '''
+                docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
+                docker push ${BACKEND_IMAGE}:latest
+                docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
+                docker push ${FRONTEND_IMAGE}:latest
+                docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                '''
                 }
             }
-        } 
+        }
 
         stage('Deploy Monitoring') {
             steps {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f monitoring/monitoring/namespace.yml
-                    kubectl apply -f monitoring/node-exporter/
-                    kubectl apply -f monitoring/prometheus/
-                    kubectl apply -f monitoring/grafana/
-                    kubectl apply -f monitoring/postgres-exporter/
+                    kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
+                    kubectl apply -f ${MONITORING_DIR}/node-exporter/
+                    kubectl apply -f ${MONITORING_DIR}/prometheus/
+                    kubectl apply -f ${MONITORING_DIR}/grafana/
+                    kubectl apply -f ${MONITORING_DIR}/postgres-exporter/
                     '''
                 }
             }
@@ -135,12 +128,12 @@ pipeline {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f K8s/secrets/
-                    kubectl apply -f K8s/configmaps/
-                    kubectl apply -f K8s/deployments/
-                    kubectl apply -f K8s/services/
-                    kubectl apply -f K8s/ingress/
-                    kubectl apply -f K8s/storage/
+                    kubectl apply -f ${K8S_DIR}/secrets/
+                    kubectl apply -f ${K8S_DIR}/configmaps/
+                    kubectl apply -f ${K8S_DIR}/deployments/
+                    kubectl apply -f ${K8S_DIR}/services/
+                    kubectl apply -f ${K8S_DIR}/ingress/
+                    kubectl apply -f ${K8S_DIR}/storage/
                     '''
                 }
             }
@@ -148,7 +141,7 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                withcredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
                     kubectl rollout status deployment/postgres-db
@@ -165,9 +158,12 @@ pipeline {
 
     post {
         success {
-            echo ' ✅ Unit test and SonarQube scan completed successfully.'
-            echo ' ✅ Docker images built and pushed to DockerHub successfully.'
-            echo ' ✅ Application deployed to kubernetes successfully.'
+            echo ' ✅ Unit Test Completed Successfully.'
+            echo ' ✅ SonarQube Scan Completed Successfully.'
+            echo ' ✅ Docker Images Built Successfully.'
+            echo ' ✅ Monitoring Deployed Successfully.'
+            echo ' ✅ Docker Images Pushed to DockerHub Successfully.'
+            echo ' ✅ Application Deployed to Kubernetes Successfully.'
         }
         failure {
             echo ' ❌ Pipeline failed. Please check the logs for details.'

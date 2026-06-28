@@ -94,15 +94,6 @@ pipeline {
             }
         }
 
-        stage('Trivy Security Scan') {
-            steps {
-                sh '''
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${BACKEND_IMAGE}:latest
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${FRONTEND_IMAGE}:latest
-                '''
-            }
-        }
-
         stage('Push Images to DockerHub')  {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {

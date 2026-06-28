@@ -118,9 +118,8 @@ pipeline {
                 kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
 
                 echo "========== Deploying Node Exporter =========="
-                kubectl apply -f ${MONITORING_DIR}/node-exporter/configmap.yaml
-                kubectl apply -f ${MONITORING_DIR}/node-exporter/daemonset.yml
-                kubectl apply -f ${MONITORING_DIR}/node-exporter/service.yml
+                kubectl apply -f monitoring/node-exporter/daemonset.yml
+                kubectl apply -f monitoring/node-exporter/service.yml
 
                 echo "========== Deploying Prometheus =========="
                 kubectl apply -f ${MONITORING_DIR}/prometheus/configmap.yaml

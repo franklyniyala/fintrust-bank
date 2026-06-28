@@ -113,7 +113,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f ${MONITORING_DIR}/monitoring/namespace.yml
+                    kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
                     kubectl apply -f ${MONITORING_DIR}/node-exporter/
                     kubectl apply -f ${MONITORING_DIR}/prometheus/
                     kubectl apply -f ${MONITORING_DIR}/grafana/

@@ -108,51 +108,71 @@ pipeline {
             }
         }
 
-        stage('Deploy Monitoring') {
-            steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
-                sh '''
-                export KUBECONFIG=$KUBECONFIG
-
-                echo "========== Creating Monitoring Namespace =========="
-                kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
-
-                echo "========== Deploying Node Exporter =========="
-                kubectl apply -f monitoring/node-exporter/daemonset.yml
-                kubectl apply -f monitoring/node-exporter/service.yml
-
-                echo "========== Deploying Prometheus =========="
-                kubectl apply -f ${MONITORING_DIR}/prometheus/configmap.yaml
-                kubectl apply -f ${MONITORING_DIR}/prometheus/deployment.yaml
-                kubectl apply -f ${MONITORING_DIR}/prometheus/service.yml
-
-                echo "========== Deploying Grafana =========="
-                kubectl apply -f ${MONITORING_DIR}/grafana/configmaps/
-                kubectl apply -f ${MONITORING_DIR}/grafana/secret.yml
-                kubectl apply -f ${MONITORING_DIR}/grafana/pvc.yml
-                kubectl apply -f ${MONITORING_DIR}/grafana/deployment.yml
-                kubectl apply -f ${MONITORING_DIR}/grafana/service.yml
-
-                echo "========== Deploying PostgreSQL Exporter =========="
-                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/secret.yml
-                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/deployment.yml
-                kubectl apply -f ${MONITORING_DIR}/postgres-exporter/service.yml
-                '''
-                }
-            }
-        }
-
-        stage('Deploy Application to Kubernetes') {
+        stage('Deploy Core Monitoring') {
             steps {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-                    kubectl apply -f ${K8s_DIR}/secrets/
-                    kubectl apply -f ${K8s_DIR}/configmaps/
-                    kubectl apply -f ${K8s_DIR}/deployments/
-                    kubectl apply -f ${K8s_DIR}/services/
-                    kubectl apply -f ${K8s_DIR}/ingress/
-                    kubectl apply -f ${K8s_DIR}/storage/
+
+                    echo "========== Creating Monitoring Namespace =========="
+                    kubectl apply -f ${MONITORING_DIR}/monitoring-namespace.yml
+
+                    echo "========== Deploying Node Exporter =========="
+                    kubectl apply -f ${MONITORING_DIR}/node-exporter/
+
+                    echo "========== Deploying Prometheus =========="
+                    kubectl apply -f ${MONITORING_DIR}/prometheus/configmap.yaml
+                    kubectl apply -f ${MONITORING_DIR}/prometheus/deployment.yaml
+                    kubectl apply -f ${MONITORING_DIR}/prometheus/service.yml
+
+                    echo "========== Deploying Grafana =========="
+                    kubectl apply -f ${MONITORING_DIR}/grafana/
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Monitoring Exporters') {
+            steps {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+
+                    echo "========== Deploying PostgreSQL Exporter =========="
+                    kubectl apply -f ${MONITORING_DIR}/postgres-exporter/
+
+                    echo "========== Deploying Kube State Metrics =========="
+                    kubectl apply -f ${MONITORING_DIR}/kube-state-metrics/serviceaccount.yml
+                    kubectl apply -f ${MONITORING_DIR}/kube-state-metrics/clusterrole.yml
+                    kubectl apply -f ${MONITORING_DIR}/kube-state-metrics/clusterrolebinding.yml
+                    kubectl apply -f ${MONITORING_DIR}/kube-state-metrics/deployment.yml
+                    kubectl apply -f ${MONITORING_DIR}/kube-state-metrics/service.yml
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Alerting Stack') {
+            steps {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+
+                    echo "========== Deploying Alert Rules =========="
+                    kubectl apply -f ${MONITORING_DIR}/alerts/
+
+                    echo "========== Deploying Alertmanager =========="
+                    kubectl apply -f ${MONITORING_DIR}/alertmanager/configmap.yml
+                    kubectl apply -f ${MONITORING_DIR}/alertmanager/deployment.yml
+                    kubectl apply -f ${MONITORING_DIR}/alertmanager/service.yml
+
+                    echo "========== Restarting Prometheus =========="
+                    kubectl rollout restart deployment/prometheus -n monitoring
+                    kubectl rollout status deployment/prometheus -n monitoring
+
+                    echo "========== Restarting Alertmanager =========="
+                    kubectl rollout restart deployment/alertmanager -n monitoring
+                    kubectl rollout status deployment/alertmanager -n monitoring
                     '''
                 }
             }

@@ -157,10 +157,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
-
-                    echo "========== Deploying Alert Rules =========="
-                    kubectl apply -f ${MONITORING_DIR}/alerts/
-
+    
                     echo "========== Deploying Alertmanager =========="
                     kubectl apply -f ${MONITORING_DIR}/alertmanager/configmap.yml
                     kubectl apply -f ${MONITORING_DIR}/alertmanager/deployment.yml
@@ -169,10 +166,6 @@ pipeline {
                     echo "========== Restarting Prometheus =========="
                     kubectl rollout restart deployment/prometheus -n monitoring
                     kubectl rollout status deployment/prometheus -n monitoring
-
-                    echo "========== Restarting Alertmanager =========="
-                    kubectl rollout restart deployment/alertmanager -n monitoring
-                    kubectl rollout status deployment/alertmanager -n monitoring
                     '''
                 }
             }

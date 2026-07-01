@@ -196,10 +196,10 @@ pipeline {
                     export KUBECONFIG=$KUBECONFIG
 
                     echo "========== Deploying Loki =========="
-                    kubectl apply -f $(MONITORING_DIR)/loki/
+                    kubectl apply -f ${LOGGING_DIR}/loki/
 
                     echo "========== Deploying Promtail =========="
-                    kubectl apply -f ${MONITORING_DIR}/promtail/
+                    kubectl apply -f ${LOGGING_DIR}/promtail/
 
                     '''
                 }

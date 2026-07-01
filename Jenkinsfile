@@ -10,6 +10,8 @@ pipeline {
 
         K8s_DIR = "K8s"
         MONITORING_DIR = "monitoring"
+        LOGGING_DIR = "logging"
+        SECURITY_DIR = "security"
     }
 
     stages {
@@ -182,6 +184,42 @@ pipeline {
                     kubectl rollout status deployment/prometheus -n monitoring
                     kubectl rollout status deployment/grafana -n monitoring
                     kubectl rollout status deployment/postgres-exporter -n monitoring
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Logging Stack') {
+            steps{
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+
+                    echo "========== Deploying Loki =========="
+                    kubectl apply -f $(MONITORING_DIR)/loki/
+
+                    echo "========== Deploying Promtail =========="
+                    kubectl apply -f ${MONITORING_DIR}/promtail/
+
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Security') {
+            steps {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+
+                    echo "========== Deploying Service Account =========="
+                    kubectl apply -f ${SECURITY_DIR}/serviceaccount.yml
+
+                    echo "========== Deploying Role =========="
+                    kubectl apply -f ${SECURITY_DIR}/role.yml
+
+                    echo "========== Deploying Role Binding =========="
+                    kubectl apply -f ${SECURITY_DIR}/rolebinding.yml
                     '''
                 }
             }

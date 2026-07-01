@@ -1,0 +1,89 @@
+groups:
+
+- name: fintrust-alerts
+
+  rules:
+
+  - alert: FinTrustBackendDown
+
+    expr: up{job="fintrust-backend"} == 0
+
+    for: 1m
+
+    labels:
+      severity: critical
+
+    annotations:
+      summary: "FinTrust Backend is DOWN"
+
+      description: "The FinTrust backend has been unreachable for more than 1 minute."
+
+  - alert: HighCPUUsage
+
+    expr: process_cpu_seconds_total > 1
+
+    for: 2m
+
+    labels:
+      severity: warning
+
+    annotations:
+      summary: "High CPU Usage"
+
+      description: "Backend CPU usage is unusually high."
+
+  - alert: HighMemoryUsage
+
+    expr: process_resident_memory_bytes > 300000000
+
+    for: 2m
+
+    labels:
+      severity: warning
+
+    annotations:
+      summary: "High Memory Usage"
+
+      description: "Backend memory usage exceeded 300 MB."
+
+  - alert: PostgreSQLExporterDown
+
+    expr: up{job="postgres-exporter"} == 0
+
+    for: 1m
+
+    labels:
+      severity: critical
+
+    annotations:
+      summary: "PostgreSQL Exporter Down"
+
+      description: "Prometheus cannot scrape PostgreSQL exporter."
+
+  - alert: NodeExporterDown
+
+    expr: up{job="node-exporter"} == 0
+
+    for: 1m
+
+    labels:
+      severity: critical
+
+    annotations:
+      summary: "Node Exporter Down"
+
+      description: "Prometheus cannot scrape Node Exporter."
+
+  - alert: KubeStateMetricsDown
+
+    expr: up{job="kube-state-metrics"} == 0
+
+    for: 1m
+
+    labels:
+      severity: critical
+
+    annotations:
+      summary: "Kube-State-Metrics Down"
+
+      description: "Prometheus cannot scrape Kube-State-Metrics."

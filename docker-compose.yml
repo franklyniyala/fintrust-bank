@@ -1,0 +1,48 @@
+services:
+  fintrust-db:
+    image: postgres:17-alpine
+    container_name: fintrust-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - fintrust-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fintrust -d fintrust"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  fintrust-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: fintrust-backend-image:v1.0
+    container_name: fintrust-backend-container
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@fintrust-db:5432/${POSTGRES_DB} 
+      PORT: 8080
+      CORS_ORIGIN: http://localhost:5173 
+    ports:
+      - "8081:8080"
+    depends_on:
+      fintrust-db:
+        condition: service_healthy
+
+  fintrust-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: fintrust-frontend-image:v1.0
+    container_name: fintrust-frontend-container
+    ports:
+      - "5173:80"
+    depends_on:
+      - fintrust-backend
+
+volumes:
+  fintrust-db-data:

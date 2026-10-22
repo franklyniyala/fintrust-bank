@@ -9,7 +9,7 @@ pipeline {
             }
         }
 
-        stage { 'Run Sonarqube Analysis'} {
+        stage {'Run Sonarqube Analysis'} {
             steps {
                 withCredentials([string(credentialsId: SONAR_TOKEN, variable: 'SONAR_TOKEN')]) {
                     sh '''

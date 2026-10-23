@@ -12,7 +12,7 @@ pipeline {
 
         stage ('Run Sonarqube Analysis') {
             steps {
-                withCredentials([string(credentialsId: SONAR_TOKEN, variable: 'SONAR_TOKEN')]) {
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                     sh '''
                     docker run --rm \
                     -e SONAR_TOKEN=$SONAR_TOKEN \

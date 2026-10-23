@@ -5,6 +5,7 @@ pipeline {
         stage ('Checkout Code') {
             steps {
                 git branch: 'main', 
+                credentialsId: 'GITHUB_LOGIN'
                 url: 'https://github.com/fintrust/fintrust.git'
             }
         }

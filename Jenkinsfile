@@ -10,17 +10,32 @@ pipeline {
             }
         }
 
-        stage('Run Sonarqube Analysis') {
+        stage('Run Backend Tests and Coverage') {
             steps {
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                dir('backend') {
+                    sh 'npm ci'
+                    sh 'npm run coverage'
+                }
+            }
+        }
+
+        stage('Run SonarQube Analysis') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'SONAR_TOKEN',
+                        variable: 'SONAR_TOKEN'
+                    )
+                ]) {
                     sh '''
                         docker run --rm \
-                            -e SONAR_TOKEN=$SONAR_TOKEN \
-                            -v $(pwd):/usr/src \
+                            -e SONAR_TOKEN="$SONAR_TOKEN" \
+                            -v "$(pwd):/usr/src" \
                             sonarsource/sonar-scanner-cli \
                             -Dsonar.projectKey=frank-org_fintrust \
                             -Dsonar.organization=frank-org \
-                            -Dsonar.sources=. \
+                            -Dsonar.sources=backend,frontend \
+                            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info \
                             -Dsonar.host.url=https://sonarcloud.io
                     '''
                 }

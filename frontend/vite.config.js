@@ -6,6 +6,12 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    clearMocks: true
+    clearMocks: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/__tests__/**', 'src/**/*.test.{js,jsx}']
+    }
   }
 });

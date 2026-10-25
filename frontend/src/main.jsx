@@ -1,22 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { sanitizeText, sanitizeAccountId, buildApiUrl } from './utils';
 import './style.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-function sanitizeText(value) {
-  return String(value ?? '').replace(/[<>]/g, '').trim().slice(0, 100);
-}
-
-function sanitizeAccountId(value) {
-  const candidate = String(value ?? '').trim();
-  return /^[a-fA-F0-9-]{36}$/.test(candidate) ? candidate : null;
-}
-
-function buildApiUrl(path) {
-  const normalizedPath = String(path ?? '').replace(/[^a-zA-Z0-9/_:-]/g, '');
-  return `${API_URL}${normalizedPath}`;
-}
 
 function App() {
   const [accounts, setAccounts] = useState([]);
@@ -175,4 +162,12 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+export { App };
+
+if (typeof document !== 'undefined') {
+  const rootElement = document.getElementById('root');
+
+  if (rootElement) {
+    createRoot(rootElement).render(<App />);
+  }
+}

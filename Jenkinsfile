@@ -34,7 +34,7 @@ pipeline {
                             sonarsource/sonar-scanner-cli \
                             -Dsonar.projectKey=frank-org_fintrust \
                             -Dsonar.organization=frank-org \
-                            -Dsonar.sources=backend/src,frontend
+                            -Dsonar.sources=backend/src,frontend \
                             -Dsonar.tests=backend/test \
                             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info \
                             -Dsonar.host.url=https://sonarcloud.io

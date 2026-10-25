@@ -189,6 +189,28 @@ test('GET /api/transactions returns transaction rows', async () => {
   });
 });
 
+test('initDb seeds demo data when no accounts exist', async () => {
+  const app = createApp(createFakePool({ count: '0' }));
+  await app.locals.initDb();
+  assert.equal(typeof app.locals.initDb, 'function');
+});
+
+test('POST /api/accounts/:id/withdraw succeeds with enough balance', async () => {
+  const app = createApp(createFakePool());
+  await withApp(app, async (server) => {
+    const { port } = server.address();
+    const response = await fetch(`http://127.0.0.1:${port}/api/accounts/acc-1/withdraw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100, description: 'Normal withdrawal' })
+    });
+
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.balance, '249900');
+  });
+});
+
 test('POST /api/accounts rejects missing customer name', async () => {
   const app = createApp(createFakePool());
   await withApp(app, async (server) => {

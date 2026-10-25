@@ -49,11 +49,15 @@ function App() {
     await fetch(buildApiUrl('/api/accounts'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName: safeCustomerName, openingBalance: Number(openingBalance) })
+      body: JSON.stringify({
+        customerName: safeCustomerName,
+        openingBalance: Number(openingBalance)
+      })
     });
+
     setCustomerName('');
     setOpeningBalance(10000);
-    loadData();
+    await loadData().catch(() => setStatus('Unable to refresh accounts'));
   }
 
   async function deposit(accountId) {
@@ -63,12 +67,19 @@ function App() {
       return;
     }
 
-    await fetch(buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/deposit`), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 5000, description: 'Demo deposit from portal' })
-    });
-    loadData();
+    await fetch(
+      buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/deposit`),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 5000,
+          description: 'Demo deposit from portal'
+        })
+      }
+    );
+
+    await loadData().catch(() => setStatus('Unable to refresh accounts'));
   }
 
   async function withdraw(accountId) {
@@ -78,12 +89,19 @@ function App() {
       return;
     }
 
-    await fetch(buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/withdraw`), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 2500, description: 'Demo withdrawal from portal' })
-    });
-    loadData();
+    await fetch(
+      buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/withdraw`),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 2500,
+          description: 'Demo withdrawal from portal'
+        })
+      }
+    );
+
+    await loadData().catch(() => setStatus('Unable to refresh accounts'));
   }
 
   useEffect(() => { loadData().catch(() => setStatus('API unavailable')); }, []);
@@ -102,9 +120,19 @@ function App() {
       <section className="card">
         <h2>Create Account</h2>
         <form onSubmit={createAccount}>
-          <input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Customer name" required />
-          <input type="number" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} placeholder="Opening balance" />
-          <button>Create Account</button>
+          <input
+            value={customerName}
+            onChange={e => setCustomerName(e.target.value)}
+            placeholder="Customer name"
+            required
+          />
+          <input
+            type="number"
+            value={openingBalance}
+            onChange={e => setOpeningBalance(e.target.value)}
+            placeholder="Opening balance"
+          />
+          <button type="submit">Create Account</button>
         </form>
       </section>
 
@@ -119,8 +147,12 @@ function App() {
               </div>
               <div className="actions">
                 <strong>₦{Number(account.balance).toLocaleString()}</strong>
-                <button onClick={() => deposit(account.id)}>Deposit</button>
-                <button onClick={() => withdraw(account.id)}>Withdraw</button>
+                <button type="button" onClick={() => deposit(account.id)}>
+                  Deposit
+                </button>
+                <button type="button" onClick={() => withdraw(account.id)}>
+                  Withdraw
+                </button>
               </div>
             </div>
           ))}

@@ -62,9 +62,19 @@ async function initDb() {
 app.get('/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ status: 'UP', service: 'fintrust-bank-api', database: 'UP', time: new Date().toISOString() });
+    res.json({
+      status: 'UP',
+      service: 'fintrust-bank-api',
+      database: 'UP',
+      time: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(503).json({ status: 'DOWN', service: 'fintrust-bank-api', database: 'DOWN' });
+    console.error('Health check failed while querying PostgreSQL', error);
+    res.status(503).json({
+      status: 'DOWN',
+      service: 'fintrust-bank-api',
+      database: 'DOWN'
+    });
   }
 });
 

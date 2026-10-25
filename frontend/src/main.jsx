@@ -4,6 +4,20 @@ import './style.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+function sanitizeText(value) {
+  return String(value ?? '').replace(/[<>]/g, '').trim().slice(0, 100);
+}
+
+function sanitizeAccountId(value) {
+  const candidate = String(value ?? '').trim();
+  return /^[a-fA-F0-9-]{36}$/.test(candidate) ? candidate : null;
+}
+
+function buildApiUrl(path) {
+  const normalizedPath = String(path ?? '').replace(/[^a-zA-Z0-9/_:-]/g, '');
+  return `${API_URL}${normalizedPath}`;
+}
+
 function App() {
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -13,9 +27,9 @@ function App() {
 
   async function loadData() {
     const [accountRes, transactionRes, healthRes] = await Promise.all([
-      fetch(`${API_URL}/api/accounts`),
-      fetch(`${API_URL}/api/transactions`),
-      fetch(`${API_URL}/health`)
+      fetch(buildApiUrl('/api/accounts')),
+      fetch(buildApiUrl('/api/transactions')),
+      fetch(buildApiUrl('/health'))
     ]);
     setAccounts(await accountRes.json());
     setTransactions(await transactionRes.json());
@@ -25,10 +39,17 @@ function App() {
 
   async function createAccount(e) {
     e.preventDefault();
-    await fetch(`${API_URL}/api/accounts`, {
+    const safeCustomerName = sanitizeText(customerName);
+
+    if (!safeCustomerName) {
+      setStatus('Customer name is invalid');
+      return;
+    }
+
+    await fetch(buildApiUrl('/api/accounts'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName, openingBalance: Number(openingBalance) })
+      body: JSON.stringify({ customerName: safeCustomerName, openingBalance: Number(openingBalance) })
     });
     setCustomerName('');
     setOpeningBalance(10000);
@@ -36,7 +57,13 @@ function App() {
   }
 
   async function deposit(accountId) {
-    await fetch(`${API_URL}/api/accounts/${accountId}/deposit`, {
+    const safeAccountId = sanitizeAccountId(accountId);
+    if (!safeAccountId) {
+      setStatus('Invalid account reference');
+      return;
+    }
+
+    await fetch(buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/deposit`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: 5000, description: 'Demo deposit from portal' })
@@ -45,7 +72,13 @@ function App() {
   }
 
   async function withdraw(accountId) {
-    await fetch(`${API_URL}/api/accounts/${accountId}/withdraw`, {
+    const safeAccountId = sanitizeAccountId(accountId);
+    if (!safeAccountId) {
+      setStatus('Invalid account reference');
+      return;
+    }
+
+    await fetch(buildApiUrl(`/api/accounts/${encodeURIComponent(safeAccountId)}/withdraw`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: 2500, description: 'Demo withdrawal from portal' })

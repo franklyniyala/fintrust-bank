@@ -14,8 +14,12 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 app.use(morgan('combined'));
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not configured. Set it in your environment or a local .env file before starting the app.');
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://fintrust:fintrust@localhost:5432/fintrustdb'
+  connectionString: process.env.DATABASE_URL
 });
 
 async function initDb() {

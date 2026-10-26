@@ -54,5 +54,56 @@ pipeline {
                 }
             }
         }
+
+        stage ('Build Frontend Docker Image') {
+            steps {
+                dir('frontend') {
+                    sh 'docker build -t fintrust-frontend-image:v1 .'                   
+                }
+            }
+        }
+
+        stage ('Build Backend Docker Image') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t fintrust-backend-image:v1 .'
+                }
+            }
+        }
+
+        stage ('Login to DockerHub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'DOCKER_LOGIN',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD',
+                    )
+                ])
+                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+            }
+        }
+
+        stage ('Push to DockerHub') {
+            steps {
+                sh 'docker push fintrust-frontend-image:v1'
+                sh 'docker push fintrust-backend-image:v1'
+            }
+        }
+
+        stage ('Deploy to Application') {
+            steps {
+                sh 'docker compose up -d'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Application Deployed Successfully! 🚀"
+        }
+        failure {
+            echo "Deployment Failed. Check logs for details. ❌"
+        }
     }
 }

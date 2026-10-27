@@ -40,6 +40,7 @@ pipeline {
                         docker run --rm \
                             -e SONAR_TOKEN="$SONAR_TOKEN" \
                             -v "$(pwd):/usr/src" \
+                            -v /var/lib/jenkins/sonar-cache:/opt/sonar-scanner/.sonar/cache \
                             sonarsource/sonar-scanner-cli \
                             -Dsonar.projectKey=frank-org_fintrust \
                             -Dsonar.organization=frank-org \
@@ -104,7 +105,7 @@ pipeline {
 
     post {
         success {
-            echo "Application Deployed Successfully! 🚀"
+            echo "✅✅ Application Deployed Successfully! 🚀"
         }
         failure {
             echo "Deployment Failed. Check logs for details. ❌"

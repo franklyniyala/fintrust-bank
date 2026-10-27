@@ -40,7 +40,7 @@ services:
     image: fintrust-frontend-image:v1.0
     container_name: fintrust-frontend-container
     ports:
-      - "5173:8080"
+      - "5173:80"
     depends_on:
       - fintrust-backend
 

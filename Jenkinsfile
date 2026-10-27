@@ -81,15 +81,17 @@ pipeline {
                     )
                 ]){
                 sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
-            }
+                }
             
             }
         }
 
         stage ('Push to DockerHub') {
             steps {
-                sh 'docker push fintrust-frontend-image:v1'
-                sh 'docker push fintrust-backend-image:v1'
+                sh 'docker tag fintrust-frontend-image:v1 ekenefranklyn/fintrust-frontend-image:v1'
+                sh 'docker push ekenefranklyn/fintrust-frontend-image:v1'
+                sh 'docker tag fintrust-backend-image:v1 ekenefranklyn/fintrust-backend-image:v1'
+                sh 'docker push ekenefranklyn/fintrust-backend-image:v1'
             }
         }
 
